@@ -67,7 +67,9 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`, click **Call**, type a message.
+Open `http://localhost:3000`. With `VOICE_MODE=off`, you'll get the chat layout. With voice configured (see `docs/VOICE.md`), you'll get a landing screen with **Call** and **Chat** buttons.
+
+The mic button in the call view uses your microphone + OpenAI Whisper to transcribe what you say into a chat message — your `OPENAI_API_KEY` covers it (~$0.006/min). No extra setup needed.
 
 ## Troubleshooting
 
