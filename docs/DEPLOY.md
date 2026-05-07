@@ -35,7 +35,7 @@ For most personal projects, **Option 1 + private fork** is the right call.
 1. Push your fork to GitHub (private if you committed `me/` data).
 2. Go to [railway.app](https://railway.app), sign in with GitHub.
 3. **New Project → Deploy from GitHub repo** → select your fork.
-4. Railway detects the Dockerfile. By default it looks for `Dockerfile` at the repo root — ours is at `backend/Dockerfile`. Set the **Dockerfile Path** to `backend/Dockerfile` in the service settings (Settings → Build → Dockerfile Path).
+4. Railway auto-detects `railway.json` and `Dockerfile` at repo root — no extra build config needed.
 5. Add environment variables (Settings → Variables):
 
    | Variable | Value |
@@ -123,7 +123,7 @@ For finer control over regions, scaling, persistent volumes:
 ```bash
 brew install flyctl    # or curl -L https://fly.io/install.sh | sh
 fly auth login
-fly launch --dockerfile backend/Dockerfile --copy-config=false
+fly launch --dockerfile Dockerfile --copy-config=false
 # Edit fly.toml as needed, then:
 fly deploy
 ```
@@ -135,7 +135,7 @@ Fly.io has a generous free allowance for small apps; production-grade is ~$5/mo 
 If you have a VPS or homelab:
 
 ```bash
-docker build -f backend/Dockerfile -t callme-backend .
+docker build -t callme-backend .
 docker run --env-file .env -p 8000:8000 callme-backend
 ```
 

@@ -1,0 +1,38 @@
+.git
+.github
+
+# Python
+**/.venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/.pytest_cache
+**/.ruff_cache
+backend/tests
+
+# Node / Next (frontend not needed in backend image)
+frontend
+node_modules
+**/node_modules
+.next
+out
+.turbo
+**/*.tsbuildinfo
+
+# Docs / repo metadata not needed in image
+docs
+README.md
+CONTRIBUTING.md
+LICENSE
+
+# IDE / OS
+.vscode
+.idea
+.DS_Store
+
+# Local env
+.env
+.env.local
+
+# Runtime data (per-deploy)
+me/leads.jsonl

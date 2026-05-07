@@ -2,8 +2,7 @@ services:
   - type: web
     name: callme-backend
     runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: .
+    dockerfilePath: ./Dockerfile
     plan: free
     healthCheckPath: /health
     envVars:
