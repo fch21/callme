@@ -1,10 +1,10 @@
 # CallMe
 
-> Open source AI persona — fork the repo, drop in your LinkedIn PDF and a photo, and host a personal "call" where visitors chat (or talk) with an AI version of you.
+> Open source AI persona. Fork the repo, drop in your LinkedIn PDF and a photo, and host a personal "call" where visitors chat (or talk) with an AI version of you.
 
 ## What is this
 
-A small open-source project that puts a "Call me" button on your personal site. Visitors click it, get an AI version of you trained on documents you provide (LinkedIn, CV, bio, projects, anything in `me/`), and can have a real conversation about your background and work — by text or voice.
+A small open-source project that puts a "Call me" button on your personal site. Visitors click it, get an AI version of you trained on documents you provide (LinkedIn, CV, bio, projects, anything in `me/`), and can have a real conversation about your background and work, by text or voice.
 
 ## Features
 
