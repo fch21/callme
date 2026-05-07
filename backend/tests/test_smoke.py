@@ -122,3 +122,10 @@ def test_execute_unknown_tool_returns_error():
 
     result = execute("nonexistent_tool", "{}")
     assert "error" in result
+
+
+def test_execute_tool_with_missing_required_arg_returns_error_not_crash():
+    from app.tools import execute
+
+    result = execute("record_user_details", "{}")
+    assert "error" in result

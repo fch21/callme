@@ -54,5 +54,8 @@ def execute(tool_name: str, arguments_json: str) -> dict:
     handler = _HANDLERS.get(tool_name)
     if handler is None:
         return {"error": f"unknown tool: {tool_name}"}
-    args = json.loads(arguments_json)
-    return handler(**args)
+    try:
+        args = json.loads(arguments_json)
+        return handler(**args)
+    except Exception as exc:
+        return {"error": f"{type(exc).__name__}: {exc}"}
