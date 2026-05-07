@@ -1,0 +1,38 @@
+# Env
+.env
+.env.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Node / Next
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# CallMe — personal data (forkers should keep their own data private).
+# Any pdf/txt/md/image dropped in me/ is treated as personal data.
+me/*.pdf
+me/*.txt
+me/*.md
+me/*.jpg
+me/*.jpeg
+me/*.png
+me/*.webp
+me/leads.jsonl
+# Public templates that ship with the repo:
+!me/README.md
+!me/*.example.*

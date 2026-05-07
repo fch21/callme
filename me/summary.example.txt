@@ -1,0 +1,13 @@
+[Your name] — [your role / what you do].
+
+Write a few paragraphs in first person about your background, what you're working on,
+what you care about, and the kinds of conversations you'd like visitors to have with you.
+
+Examples of things to mention:
+- Where you've worked / studied
+- What problems you like solving
+- Topics you're happy to dig into vs. topics you'd rather not
+- A bit of personality — favorite books, hobbies, what you're learning
+
+This text is read by the AI as part of its system prompt. The more specific and
+honest it is, the more your AI persona will sound like you.

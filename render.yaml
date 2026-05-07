@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: callme-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: PERSONA_NAME
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: ELEVENLABS_VOICE_ID
+        sync: false
+      - key: VOICE_MODE
+        value: preset
+      - key: CHAT_MODEL
+        value: gpt-5.4-mini
+      - key: EVALUATOR_MODEL
+        value: gpt-5.4-mini
