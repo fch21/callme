@@ -7,10 +7,10 @@ from elevenlabs.types import VoiceSettings
 from .config import ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID, VOICE_MODE
 
 _VOICE_SETTINGS = VoiceSettings(
-    stability=0.45,
-    similarity_boost=0.65,
-    style=0.1,
-    speed=1.05,
+    stability=0.4,
+    similarity_boost=0.5,
+    style=0.25,
+    speed=1.1,
     use_speaker_boost=True,
 )
 
