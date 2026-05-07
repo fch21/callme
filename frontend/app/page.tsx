@@ -247,7 +247,7 @@ function LandingView({
         {voiceEnabled && (
           <button
             onClick={onCall}
-            className="flex items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 px-8 py-4 rounded-full font-medium text-lg transition shadow-lg shadow-emerald-500/20 w-60 justify-center"
+            className="flex items-center justify-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 w-60 h-12 rounded-full font-medium transition shadow-lg shadow-emerald-500/20"
           >
             <PhoneIcon />
             Call
@@ -255,7 +255,7 @@ function LandingView({
         )}
         <button
           onClick={onChat}
-          className="flex items-center gap-3 bg-neutral-100 hover:bg-white text-neutral-950 px-8 py-3 rounded-full font-medium transition w-60 justify-center"
+          className="flex items-center justify-center gap-3 bg-neutral-100 hover:bg-white text-neutral-950 w-60 h-12 rounded-full font-medium transition"
         >
           <ChatIcon />
           Chat

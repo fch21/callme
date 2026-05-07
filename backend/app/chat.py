@@ -21,14 +21,13 @@ def _system_prompt() -> str:
     return build_system_prompt(PERSONA_NAME)
 
 
-def _run_with_tools(messages: list[dict]) -> str:
+def _run_with_tools(messages: list[dict], tools_enabled: bool = True) -> str:
     client = _client()
     for _ in range(_MAX_TOOL_ITERATIONS):
-        response = client.chat.completions.create(
-            model=CHAT_MODEL,
-            messages=messages,
-            tools=TOOL_SCHEMAS,
-        )
+        kwargs: dict = {"model": CHAT_MODEL, "messages": messages}
+        if tools_enabled:
+            kwargs["tools"] = TOOL_SCHEMAS
+        response = client.chat.completions.create(**kwargs)
         choice = response.choices[0]
         if choice.finish_reason != "tool_calls":
             return choice.message.content or ""
@@ -74,4 +73,4 @@ def reply(message: str, history: list[dict]) -> str:
         *history,
         {"role": "user", "content": message},
     ]
-    return _run_with_tools(retry_messages)
+    return _run_with_tools(retry_messages, tools_enabled=False)
