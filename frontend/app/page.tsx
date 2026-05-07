@@ -81,10 +81,17 @@ function useChat(voiceEnabled: boolean) {
     audio.play().catch(() => setSpeaking(false));
   }
 
+  function stopAudio() {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    setSpeaking(false);
+  }
+
   async function send(textOverride?: string) {
     const message = (textOverride ?? input).trim();
     if (!message || loading) return;
 
+    stopAudio();
     setInput("");
     setLoading(true);
     const next: Message[] = [...history, { role: "user", content: message }];
@@ -123,10 +130,13 @@ function useChat(voiceEnabled: boolean) {
     setSpeaking(false);
   }
 
-  return { history, input, setInput, loading, speaking, send, reset };
+  return { history, input, setInput, loading, speaking, send, reset, stopAudio };
 }
 
-function useRecorder(onTranscribed: (text: string) => void) {
+function useRecorder(
+  onTranscribed: (text: string) => void,
+  onStartRecording?: () => void,
+) {
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -141,6 +151,7 @@ function useRecorder(onTranscribed: (text: string) => void) {
 
   async function start() {
     setError(null);
+    onStartRecording?.();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -266,7 +277,10 @@ function CallView({
   onEnd: () => void;
 }) {
   const chat = useChat(true);
-  const recorder = useRecorder((text) => chat.send(text));
+  const recorder = useRecorder(
+    (text) => chat.send(text),
+    () => chat.stopAudio(),
+  );
   const transcriptRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -296,7 +310,17 @@ function CallView({
     ? "Tap to send"
     : recorder.transcribing
     ? "Transcribing…"
+    : chat.speaking
+    ? "Tap to interrupt"
     : "Tap to talk";
+
+  function handleMicClick() {
+    if (chat.speaking) {
+      chat.stopAudio();
+      return;
+    }
+    recorder.toggle();
+  }
 
   return (
     <main className="h-dvh flex flex-col bg-[radial-gradient(ellipse_at_top,#1a1a1a,#000_70%)] relative">
@@ -309,10 +333,14 @@ function CallView({
       </button>
 
       <section className="flex flex-col items-center pt-8 pb-3 px-6 gap-3 shrink-0">
-        <CallPhoto personaName={personaName} speaking={chat.speaking} />
-        <div className="flex items-baseline justify-center gap-3 flex-wrap text-center">
+        <CallPhoto
+          personaName={personaName}
+          speaking={chat.speaking}
+          thinking={chat.loading || recorder.transcribing}
+        />
+        <div className="text-center flex flex-col items-center gap-1">
           <h1 className="text-xl font-medium tracking-tight">{personaName}</h1>
-          <div className="text-xs flex items-center gap-1.5 text-neutral-500">
+          <div className="text-xs flex items-center gap-1.5">
             <span
               className={`w-1.5 h-1.5 rounded-full bg-emerald-500 ${
                 chat.speaking || chat.loading || recorder.recording || recorder.transcribing
@@ -320,7 +348,8 @@ function CallView({
                   : ""
               }`}
             />
-            <span>AI · {status}</span>
+            <span className="text-neutral-500">AI ·</span>
+            <span className="text-emerald-400">{status}</span>
           </div>
         </div>
       </section>
@@ -362,19 +391,27 @@ function CallView({
 
       <footer className="px-4 pt-3 pb-10 flex flex-col items-center gap-3 shrink-0">
         <button
-          onClick={recorder.toggle}
-          disabled={chat.loading || chat.speaking || recorder.transcribing}
-          aria-label={recorder.recording ? "Stop recording" : "Start recording"}
+          onClick={handleMicClick}
+          disabled={chat.loading || recorder.transcribing}
+          aria-label={
+            chat.speaking
+              ? "Interrupt"
+              : recorder.recording
+              ? "Stop recording"
+              : "Start recording"
+          }
           className={`relative w-16 h-16 rounded-full flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
             recorder.recording
-              ? "bg-red-500 shadow-lg shadow-red-500/40"
+              ? "bg-red-500 text-white shadow-lg shadow-red-500/40"
+              : chat.speaking
+              ? "bg-neutral-700 hover:bg-neutral-600 text-neutral-100"
               : "bg-neutral-100 hover:bg-white text-neutral-950"
           }`}
         >
           {recorder.recording && (
             <span className="absolute inset-0 rounded-full bg-red-500/40 animate-ping" />
           )}
-          <MicIcon active={recorder.recording} />
+          {chat.speaking ? <PauseIcon /> : <MicIcon />}
         </button>
         <p className="text-xs text-neutral-500">{micHint}</p>
         {recorder.error && (
@@ -405,9 +442,11 @@ function CallView({
 function CallPhoto({
   personaName,
   speaking,
+  thinking,
 }: {
   personaName: string;
   speaking: boolean;
+  thinking: boolean;
 }) {
   const [hasPhoto, setHasPhoto] = useState(true);
 
@@ -429,10 +468,31 @@ function CallPhoto({
           />
         </>
       )}
+      {thinking && !speaking && (
+        <svg
+          className="absolute -inset-2 animate-spin pointer-events-none"
+          style={{ animationDuration: "1.2s" }}
+          viewBox="0 0 100 100"
+          fill="none"
+          aria-hidden="true"
+        >
+          <circle
+            cx="50"
+            cy="50"
+            r="48"
+            stroke="#10b981"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeDasharray="80 220"
+          />
+        </svg>
+      )}
       <div
         className={`relative w-full h-full rounded-full bg-gradient-to-br from-neutral-700 to-neutral-900 flex items-center justify-center overflow-hidden transition-all duration-300 ${
           speaking
             ? "ring-2 ring-emerald-500/70 shadow-[0_0_60px_-10px_rgba(16,185,129,0.55)]"
+            : thinking
+            ? "ring-1 ring-neutral-800"
             : "ring-1 ring-neutral-700"
         }`}
       >
@@ -655,23 +715,37 @@ function CloseIcon() {
   );
 }
 
-function MicIcon({ active }: { active: boolean }) {
+function MicIcon() {
   return (
     <svg
       width="24"
       height="24"
       viewBox="0 0 24 24"
-      fill={active ? "white" : "none"}
+      fill="none"
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={active ? "text-white" : "text-neutral-950"}
     >
-      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-      <line x1="12" y1="19" x2="12" y2="23" />
-      <line x1="8" y1="23" x2="16" y2="23" />
+      <rect x="9" y="2" width="6" height="12" rx="3" />
+      <path d="M19 10v1a7 7 0 0 1-14 0v-1" />
+      <line x1="12" y1="19" x2="12" y2="22" />
+      <line x1="8" y1="22" x2="16" y2="22" />
+    </svg>
+  );
+}
+
+function PauseIcon() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <rect x="6" y="4" width="4" height="16" rx="1.5" />
+      <rect x="14" y="4" width="4" height="16" rx="1.5" />
     </svg>
   );
 }
