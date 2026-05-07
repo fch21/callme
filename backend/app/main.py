@@ -1,11 +1,12 @@
 import base64
 import sys
 
-from fastapi import FastAPI
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 
+from . import transcribe as transcribe_module
 from . import voice
 from .chat import reply
 from .config import ALLOWED_ORIGINS, ME_DIR, PERSONA_NAME
@@ -72,3 +73,16 @@ def photo() -> Response:
         if path.exists():
             return FileResponse(path)
     return Response(status_code=404)
+
+
+class TranscribeResponse(BaseModel):
+    text: str
+
+
+@app.post("/transcribe", response_model=TranscribeResponse)
+async def transcribe(audio: UploadFile = File(...)) -> TranscribeResponse:
+    audio_bytes = await audio.read()
+    if not audio_bytes:
+        raise HTTPException(status_code=400, detail="empty audio")
+    text = transcribe_module.transcribe(audio_bytes, audio.filename or "audio.webm")
+    return TranscribeResponse(text=text)
