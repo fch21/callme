@@ -27,6 +27,7 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     message: str
     history: list[ChatMessage] = []
+    voice: bool = True
 
 
 class ChatResponse(BaseModel):
@@ -49,7 +50,7 @@ def chat(req: ChatRequest) -> ChatResponse:
     text = reply(req.message, history)
 
     audio_b64: str | None = None
-    if voice.is_enabled():
+    if req.voice and voice.is_enabled():
         try:
             audio_b64 = base64.b64encode(voice.synthesize(text)).decode("ascii")
         except Exception:

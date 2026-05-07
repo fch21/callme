@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 type Message = { role: "user" | "assistant"; content: string };
-type CallState = "idle" | "connected";
+type Mode = "landing" | "call" | "chat";
 type Health = { status: string; persona: string; voice_enabled: boolean };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -11,6 +11,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 export default function Home() {
   const [health, setHealth] = useState<Health | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<Mode>("landing");
 
   useEffect(() => {
     fetch(`${API_URL}/health`)
@@ -18,7 +19,10 @@ export default function Home() {
         if (!r.ok) throw new Error("backend not ok");
         return r.json();
       })
-      .then((data: Health) => setHealth(data))
+      .then((data: Health) => {
+        setHealth(data);
+        if (!data.voice_enabled) setMode("chat");
+      })
       .catch(() => setError(`Can't reach backend at ${API_URL}`));
   }, []);
 
@@ -38,10 +42,25 @@ export default function Home() {
     );
   }
 
-  return health.voice_enabled ? (
-    <CallView personaName={health.persona} />
-  ) : (
-    <ChatView personaName={health.persona} />
+  if (mode === "landing") {
+    return (
+      <LandingView
+        personaName={health.persona}
+        onCall={() => setMode("call")}
+        onChat={() => setMode("chat")}
+      />
+    );
+  }
+
+  if (mode === "call") {
+    return <CallView personaName={health.persona} onEnd={() => setMode("landing")} />;
+  }
+
+  return (
+    <ChatView
+      personaName={health.persona}
+      onEnd={health.voice_enabled ? () => setMode("landing") : undefined}
+    />
   );
 }
 
@@ -75,7 +94,7 @@ function useChat(voiceEnabled: boolean) {
       const res = await fetch(`${API_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history }),
+        body: JSON.stringify({ message, history, voice: voiceEnabled }),
       });
       const data: { reply: string; audio_b64?: string } = await res.json();
       setHistory([...next, { role: "assistant", content: data.reply }]);
@@ -101,8 +120,56 @@ function useChat(voiceEnabled: boolean) {
   return { history, input, setInput, loading, speaking, send, reset };
 }
 
-function CallView({ personaName }: { personaName: string }) {
-  const [callState, setCallState] = useState<CallState>("idle");
+function LandingView({
+  personaName,
+  onCall,
+  onChat,
+}: {
+  personaName: string;
+  onCall: () => void;
+  onChat: () => void;
+}) {
+  return (
+    <main className="min-h-screen flex flex-col items-center justify-center px-6 gap-10 bg-[radial-gradient(ellipse_at_top,#1a1a1a,#000_70%)]">
+      <div className="flex flex-col items-center gap-6">
+        <Photo personaName={personaName} />
+        <div className="text-center">
+          <h1 className="text-3xl font-medium tracking-tight">{personaName}</h1>
+          <p className="text-sm text-neutral-500 mt-1">Available now</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center gap-3">
+        <button
+          onClick={onCall}
+          className="flex items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 px-8 py-4 rounded-full font-medium text-lg transition shadow-lg shadow-emerald-500/20 w-60 justify-center"
+        >
+          <PhoneIcon />
+          Call
+        </button>
+        <button
+          onClick={onChat}
+          className="flex items-center gap-3 bg-neutral-100 hover:bg-white text-neutral-950 px-8 py-3 rounded-full font-medium transition w-60 justify-center"
+        >
+          <ChatIcon />
+          Chat
+        </button>
+      </div>
+
+      <p className="text-xs text-neutral-600 text-center max-w-xs">
+        Talk to an AI version of {personaName}, trained on their LinkedIn and bio.
+      </p>
+    </main>
+  );
+}
+
+function CallView({
+  personaName,
+  onEnd,
+}: {
+  personaName: string;
+  onEnd: () => void;
+}) {
   const chat = useChat(true);
   const transcriptRef = useRef<HTMLDivElement>(null);
 
@@ -113,40 +180,9 @@ function CallView({ personaName }: { personaName: string }) {
     });
   }, [chat.history, chat.loading]);
 
-  function start() {
-    chat.reset();
-    setCallState("connected");
-  }
-
   function end() {
     chat.reset();
-    setCallState("idle");
-  }
-
-  if (callState === "idle") {
-    return (
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 gap-10 bg-[radial-gradient(ellipse_at_top,#1a1a1a,#000_70%)]">
-        <div className="flex flex-col items-center gap-6">
-          <Photo personaName={personaName} />
-          <div className="text-center">
-            <h1 className="text-3xl font-medium tracking-tight">{personaName}</h1>
-            <p className="text-sm text-neutral-500 mt-1">Available now</p>
-          </div>
-        </div>
-
-        <button
-          onClick={start}
-          className="flex items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 px-8 py-4 rounded-full font-medium text-lg transition shadow-lg shadow-emerald-500/20"
-        >
-          <PhoneIcon />
-          Call
-        </button>
-
-        <p className="text-xs text-neutral-600 text-center max-w-xs">
-          You'll be connected with an AI version of {personaName}, trained on their LinkedIn and bio.
-        </p>
-      </main>
-    );
+    onEnd();
   }
 
   return (
@@ -185,7 +221,13 @@ function CallView({ personaName }: { personaName: string }) {
   );
 }
 
-function ChatView({ personaName }: { personaName: string }) {
+function ChatView({
+  personaName,
+  onEnd,
+}: {
+  personaName: string;
+  onEnd?: () => void;
+}) {
   const chat = useChat(false);
   const transcriptRef = useRef<HTMLDivElement>(null);
 
@@ -195,6 +237,11 @@ function ChatView({ personaName }: { personaName: string }) {
       behavior: "smooth",
     });
   }, [chat.history, chat.loading]);
+
+  function end() {
+    chat.reset();
+    onEnd?.();
+  }
 
   return (
     <main className="min-h-screen flex flex-col bg-[radial-gradient(ellipse_at_top,#1a1a1a,#000_70%)]">
@@ -207,6 +254,14 @@ function ChatView({ personaName }: { personaName: string }) {
             Online
           </div>
         </div>
+        {onEnd && (
+          <button
+            onClick={end}
+            className="text-neutral-400 hover:text-neutral-100 text-sm font-medium px-3 py-2 rounded-full"
+          >
+            ← Back
+          </button>
+        )}
       </header>
 
       <Transcript
@@ -363,6 +418,23 @@ function PhoneIcon() {
       strokeLinejoin="round"
     >
       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  );
+}
+
+function ChatIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   );
 }
