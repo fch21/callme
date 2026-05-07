@@ -10,7 +10,7 @@ _VOICE_SETTINGS = VoiceSettings(
     stability=0.45,
     similarity_boost=0.65,
     style=0.1,
-    speed=1.15,
+    speed=1.05,
     use_speaker_boost=True,
 )
 
