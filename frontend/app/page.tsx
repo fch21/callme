@@ -21,7 +21,6 @@ export default function Home() {
       })
       .then((data: Health) => {
         setHealth(data);
-        if (!data.voice_enabled) setMode("chat");
       })
       .catch(() => setError(`Can't reach backend at ${API_URL}`));
   }, []);
@@ -46,6 +45,7 @@ export default function Home() {
     return (
       <LandingView
         personaName={health.persona}
+        voiceEnabled={health.voice_enabled}
         onCall={() => setMode("call")}
         onChat={() => setMode("chat")}
       />
@@ -59,7 +59,7 @@ export default function Home() {
   return (
     <ChatView
       personaName={health.persona}
-      onEnd={health.voice_enabled ? () => setMode("landing") : undefined}
+      onEnd={() => setMode("landing")}
     />
   );
 }
@@ -122,10 +122,12 @@ function useChat(voiceEnabled: boolean) {
 
 function LandingView({
   personaName,
+  voiceEnabled,
   onCall,
   onChat,
 }: {
   personaName: string;
+  voiceEnabled: boolean;
   onCall: () => void;
   onChat: () => void;
 }) {
@@ -135,18 +137,20 @@ function LandingView({
         <Photo personaName={personaName} />
         <div className="text-center">
           <h1 className="text-3xl font-medium tracking-tight">{personaName}</h1>
-          <p className="text-sm text-neutral-500 mt-1">Available now</p>
+          <p className="text-sm text-neutral-500 mt-1">AI version</p>
         </div>
       </div>
 
       <div className="flex flex-col items-center gap-3">
-        <button
-          onClick={onCall}
-          className="flex items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 px-8 py-4 rounded-full font-medium text-lg transition shadow-lg shadow-emerald-500/20 w-60 justify-center"
-        >
-          <PhoneIcon />
-          Call
-        </button>
+        {voiceEnabled && (
+          <button
+            onClick={onCall}
+            className="flex items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 px-8 py-4 rounded-full font-medium text-lg transition shadow-lg shadow-emerald-500/20 w-60 justify-center"
+          >
+            <PhoneIcon />
+            Call
+          </button>
+        )}
         <button
           onClick={onChat}
           className="flex items-center gap-3 bg-neutral-100 hover:bg-white text-neutral-950 px-8 py-3 rounded-full font-medium transition w-60 justify-center"
@@ -157,7 +161,7 @@ function LandingView({
       </div>
 
       <p className="text-xs text-neutral-600 text-center max-w-xs">
-        Talk to an AI version of {personaName}, trained on their LinkedIn and bio.
+        You're chatting with an AI trained on {personaName}'s career and background.
       </p>
     </main>
   );
@@ -191,9 +195,10 @@ function CallView({
         <Photo small speaking={chat.speaking} personaName={personaName} />
         <div className="flex-1">
           <div className="font-medium">{personaName}</div>
-          <div className="text-xs text-emerald-500 flex items-center gap-1.5">
+          <div className="text-xs flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            {chat.speaking ? "Speaking…" : "On call"}
+            <span className="text-neutral-500">AI version ·</span>
+            <span className="text-emerald-500">{chat.speaking ? "Speaking…" : "On call"}</span>
           </div>
         </div>
         <button
@@ -249,9 +254,10 @@ function ChatView({
         <Photo small personaName={personaName} />
         <div className="flex-1">
           <div className="font-medium">{personaName}</div>
-          <div className="text-xs text-emerald-500 flex items-center gap-1.5">
+          <div className="text-xs flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Online
+            <span className="text-neutral-500">AI version ·</span>
+            <span className="text-emerald-500">Online</span>
           </div>
         </div>
         {onEnd && (
