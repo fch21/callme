@@ -160,7 +160,7 @@ function LandingView({
         </button>
       </div>
 
-      <p className="text-xs text-neutral-600 text-center max-w-xs">
+      <p className="text-xs text-neutral-400 text-center max-w-xs">
         You're chatting with an AI trained on {personaName}'s career and background.
       </p>
     </main>
