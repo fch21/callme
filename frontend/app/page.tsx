@@ -190,7 +190,7 @@ function CallView({
   }
 
   return (
-    <main className="min-h-screen flex flex-col bg-[radial-gradient(ellipse_at_top,#1a1a1a,#000_70%)]">
+    <main className="h-dvh flex flex-col bg-[radial-gradient(ellipse_at_top,#1a1a1a,#000_70%)]">
       <header className="flex items-center gap-4 px-6 py-4 border-b border-neutral-900">
         <Photo small speaking={chat.speaking} personaName={personaName} />
         <div className="flex-1">
@@ -249,7 +249,7 @@ function ChatView({
   }
 
   return (
-    <main className="min-h-screen flex flex-col bg-[radial-gradient(ellipse_at_top,#1a1a1a,#000_70%)]">
+    <main className="h-dvh flex flex-col bg-[radial-gradient(ellipse_at_top,#1a1a1a,#000_70%)]">
       <header className="flex items-center gap-4 px-6 py-4 border-b border-neutral-900">
         {onEnd && (
           <button
@@ -299,7 +299,7 @@ function Transcript({
   emptyHint: string;
 }) {
   return (
-    <div ref={ref} className="flex-1 overflow-y-auto px-4 py-6">
+    <div ref={ref} className="flex-1 min-h-0 overflow-y-auto px-4 py-6">
       <div className="max-w-2xl mx-auto flex flex-col gap-3">
         {history.length === 0 && (
           <div className="text-center text-neutral-600 text-sm py-12">{emptyHint}</div>
