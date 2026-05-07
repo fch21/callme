@@ -469,30 +469,19 @@ function CallPhoto({
         </>
       )}
       {thinking && !speaking && (
-        <svg
-          className="absolute -inset-2 animate-spin pointer-events-none"
-          style={{ animationDuration: "1.2s" }}
-          viewBox="0 0 100 100"
-          fill="none"
+        <span
+          className="absolute inset-0 rounded-full ring-2 ring-emerald-500/50 animate-pulse pointer-events-none"
+          style={{
+            boxShadow: "0 0 30px -5px rgba(16, 185, 129, 0.4)",
+            animationDuration: "1.6s",
+          }}
           aria-hidden="true"
-        >
-          <circle
-            cx="50"
-            cy="50"
-            r="48"
-            stroke="#10b981"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeDasharray="80 220"
-          />
-        </svg>
+        />
       )}
       <div
         className={`relative w-full h-full rounded-full bg-gradient-to-br from-neutral-700 to-neutral-900 flex items-center justify-center overflow-hidden transition-all duration-300 ${
           speaking
             ? "ring-2 ring-emerald-500/70 shadow-[0_0_60px_-10px_rgba(16,185,129,0.55)]"
-            : thinking
-            ? "ring-1 ring-neutral-800"
             : "ring-1 ring-neutral-700"
         }`}
       >
