@@ -18,7 +18,7 @@ VOICE_MODE = os.getenv("VOICE_MODE", "off")
 PUSHOVER_USER = os.getenv("PUSHOVER_USER")
 PUSHOVER_TOKEN = os.getenv("PUSHOVER_TOKEN")
 
-PERSONA_NAME = os.getenv("PERSONA_NAME", "Fernando")
+PERSONA_NAME = os.getenv("PERSONA_NAME", "Your Name")
 CHAT_MODEL = os.getenv("CHAT_MODEL", "gpt-5.4-mini")
 EVALUATOR_MODEL = os.getenv("EVALUATOR_MODEL", "gpt-5.4-mini")
 
