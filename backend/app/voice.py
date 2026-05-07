@@ -2,8 +2,16 @@ import sys
 from functools import lru_cache
 
 from elevenlabs.client import ElevenLabs
+from elevenlabs.types import VoiceSettings
 
 from .config import ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID, VOICE_MODE
+
+_VOICE_SETTINGS = VoiceSettings(
+    stability=0.4,
+    similarity_boost=0.75,
+    style=0.25,
+    use_speaker_boost=True,
+)
 
 
 def is_enabled() -> bool:
@@ -22,6 +30,7 @@ def synthesize(text: str) -> bytes:
             text=text,
             model_id="eleven_multilingual_v2",
             output_format="mp3_44100_128",
+            voice_settings=_VOICE_SETTINGS,
         )
         return b"".join(stream)
     except Exception as exc:

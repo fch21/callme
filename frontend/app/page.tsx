@@ -308,28 +308,33 @@ function CallView({
         <CloseIcon />
       </button>
 
-      <section className="flex flex-col items-center pt-12 pb-6 px-6 gap-5 shrink-0">
+      <section className="flex flex-col items-center pt-8 pb-3 px-6 gap-3 shrink-0">
         <CallPhoto personaName={personaName} speaking={chat.speaking} />
-        <div className="text-center flex flex-col items-center gap-1.5">
-          <h1 className="text-2xl font-medium tracking-tight">{personaName}</h1>
-          <div className="text-sm flex items-center gap-2">
-            <span className="text-neutral-500">AI version</span>
-            <span className="text-neutral-700">·</span>
-            <span className="text-emerald-400 flex items-center gap-1.5">
-              <span
-                className={`w-1.5 h-1.5 rounded-full bg-emerald-500 ${
-                  chat.speaking || chat.loading || recorder.recording || recorder.transcribing
-                    ? "animate-pulse"
-                    : ""
-                }`}
-              />
-              {status}
-            </span>
+        <div className="flex items-baseline justify-center gap-3 flex-wrap text-center">
+          <h1 className="text-xl font-medium tracking-tight">{personaName}</h1>
+          <div className="text-xs flex items-center gap-1.5 text-neutral-500">
+            <span
+              className={`w-1.5 h-1.5 rounded-full bg-emerald-500 ${
+                chat.speaking || chat.loading || recorder.recording || recorder.transcribing
+                  ? "animate-pulse"
+                  : ""
+              }`}
+            />
+            <span>AI · {status}</span>
           </div>
         </div>
       </section>
 
-      <div ref={transcriptRef} className="flex-1 min-h-0 overflow-y-auto px-6 py-2">
+      <div
+        ref={transcriptRef}
+        className="flex-1 min-h-0 overflow-y-auto px-6 py-4"
+        style={{
+          maskImage:
+            "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
+          WebkitMaskImage:
+            "linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%)",
+        }}
+      >
         <div className="max-w-xl mx-auto flex flex-col gap-2.5 text-sm">
           {chat.history.length === 0 && (
             <div className="text-center text-neutral-600 py-6">
@@ -355,7 +360,7 @@ function CallView({
         </div>
       </div>
 
-      <footer className="px-4 pt-3 pb-6 flex flex-col items-center gap-3 shrink-0">
+      <footer className="px-4 pt-3 pb-10 flex flex-col items-center gap-3 shrink-0">
         <button
           onClick={recorder.toggle}
           disabled={chat.loading || chat.speaking || recorder.transcribing}
@@ -501,7 +506,7 @@ function ChatView({
       <MessageInput
         value={chat.input}
         onChange={chat.setInput}
-        onSend={chat.send}
+        onSend={() => chat.send()}
         disabled={chat.loading}
       />
     </main>
