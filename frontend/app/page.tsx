@@ -254,9 +254,10 @@ function ChatView({
         {onEnd && (
           <button
             onClick={end}
-            className="text-neutral-400 hover:text-neutral-100 text-sm font-medium px-3 py-2 -ml-2 rounded-full"
+            aria-label="Back"
+            className="text-neutral-400 hover:text-neutral-100 p-2 -ml-2 rounded-full transition"
           >
-            ← Back
+            <ArrowLeftIcon />
           </button>
         )}
         <Photo small personaName={personaName} />
@@ -408,6 +409,24 @@ function Photo({
         )}
       </div>
     </div>
+  );
+}
+
+function ArrowLeftIcon() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.25"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M19 12H5" />
+      <path d="M12 19l-7-7 7-7" />
+    </svg>
   );
 }
 
