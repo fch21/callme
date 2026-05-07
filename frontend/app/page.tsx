@@ -251,6 +251,14 @@ function ChatView({
   return (
     <main className="min-h-screen flex flex-col bg-[radial-gradient(ellipse_at_top,#1a1a1a,#000_70%)]">
       <header className="flex items-center gap-4 px-6 py-4 border-b border-neutral-900">
+        {onEnd && (
+          <button
+            onClick={end}
+            className="text-neutral-400 hover:text-neutral-100 text-sm font-medium px-3 py-2 -ml-2 rounded-full"
+          >
+            ← Back
+          </button>
+        )}
         <Photo small personaName={personaName} />
         <div className="flex-1">
           <div className="font-medium">{personaName}</div>
@@ -260,14 +268,6 @@ function ChatView({
             <span className="text-emerald-500">Online</span>
           </div>
         </div>
-        {onEnd && (
-          <button
-            onClick={end}
-            className="text-neutral-400 hover:text-neutral-100 text-sm font-medium px-3 py-2 rounded-full"
-          >
-            ← Back
-          </button>
-        )}
       </header>
 
       <Transcript
