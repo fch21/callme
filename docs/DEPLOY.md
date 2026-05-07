@@ -51,8 +51,8 @@ For most personal projects, **Option 1 + private fork** is the right call.
    | `CHAT_MODEL` | `gpt-5.4-mini` (or override) |
    | `EVALUATOR_MODEL` | `gpt-5.4-mini` (or override) |
 
-6. Trigger a deploy. Railway gives you a URL like `https://callme-backend-production.up.railway.app`. Note it.
-7. Sanity check: `curl https://your-backend.up.railway.app/health`.
+6. Trigger a deploy. Railway gives you a URL like `https://<service-name>.up.railway.app`. Note it.
+7. Sanity check: `curl https://<your-service>.up.railway.app/health`.
 
 > Railway hobby plan ($5/mo) gives you ~500 hours of compute, which is more than enough for a low-traffic personal site. No sleep, fast cold starts.
 
