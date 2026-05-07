@@ -1,3 +1,4 @@
+import sys
 from functools import lru_cache
 
 from elevenlabs.client import ElevenLabs
@@ -15,10 +16,18 @@ def _client() -> ElevenLabs:
 
 
 def synthesize(text: str) -> bytes:
-    stream = _client().text_to_speech.convert(
-        voice_id=ELEVENLABS_VOICE_ID,
-        text=text,
-        model_id="eleven_multilingual_v2",
-        output_format="mp3_44100_128",
-    )
-    return b"".join(stream)
+    try:
+        stream = _client().text_to_speech.convert(
+            voice_id=ELEVENLABS_VOICE_ID,
+            text=text,
+            model_id="eleven_multilingual_v2",
+            output_format="mp3_44100_128",
+        )
+        return b"".join(stream)
+    except Exception as exc:
+        print(
+            f"[voice] ElevenLabs synthesis failed: {type(exc).__name__}: {exc}",
+            file=sys.stderr,
+            flush=True,
+        )
+        raise

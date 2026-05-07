@@ -1,4 +1,5 @@
 import base64
+import sys
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -53,7 +54,12 @@ def chat(req: ChatRequest) -> ChatResponse:
     if req.voice and voice.is_enabled():
         try:
             audio_b64 = base64.b64encode(voice.synthesize(text)).decode("ascii")
-        except Exception:
+        except Exception as exc:
+            print(
+                f"[chat] returning text only, voice synthesis failed: {exc}",
+                file=sys.stderr,
+                flush=True,
+            )
             audio_b64 = None
 
     return ChatResponse(reply=text, audio_b64=audio_b64)

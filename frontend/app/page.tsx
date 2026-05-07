@@ -98,7 +98,13 @@ function useChat(voiceEnabled: boolean) {
       });
       const data: { reply: string; audio_b64?: string } = await res.json();
       setHistory([...next, { role: "assistant", content: data.reply }]);
-      if (data.audio_b64 && voiceEnabled) playAudio(data.audio_b64);
+      if (data.audio_b64 && voiceEnabled) {
+        playAudio(data.audio_b64);
+      } else if (voiceEnabled) {
+        console.warn(
+          "[CallMe] Voice mode is on but the backend returned no audio. Check Railway logs for an ElevenLabs error.",
+        );
+      }
     } catch {
       setHistory([
         ...next,
@@ -189,40 +195,139 @@ function CallView({
     onEnd();
   }
 
+  const status = chat.speaking
+    ? "Speaking…"
+    : chat.loading
+    ? "Thinking…"
+    : "On call";
+
   return (
     <main className="h-dvh flex flex-col bg-[radial-gradient(ellipse_at_top,#1a1a1a,#000_70%)]">
-      <header className="flex items-center gap-4 px-6 py-4 border-b border-neutral-900">
-        <Photo small speaking={chat.speaking} personaName={personaName} />
-        <div className="flex-1">
-          <div className="font-medium">{personaName}</div>
-          <div className="text-xs flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-neutral-500">AI version ·</span>
-            <span className="text-emerald-500">{chat.speaking ? "Speaking…" : "On call"}</span>
+      <section className="flex flex-col items-center pt-10 pb-6 px-6 gap-5">
+        <CallPhoto personaName={personaName} speaking={chat.speaking} />
+        <div className="text-center flex flex-col items-center gap-1.5">
+          <h1 className="text-2xl font-medium tracking-tight">{personaName}</h1>
+          <div className="text-sm flex items-center gap-2">
+            <span className="text-neutral-500">AI version</span>
+            <span className="text-neutral-700">·</span>
+            <span className="text-emerald-400 flex items-center gap-1.5">
+              <span
+                className={`w-1.5 h-1.5 rounded-full bg-emerald-500 ${
+                  chat.speaking || chat.loading ? "animate-pulse" : ""
+                }`}
+              />
+              {status}
+            </span>
           </div>
+        </div>
+      </section>
+
+      <div ref={transcriptRef} className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
+        <div className="max-w-xl mx-auto flex flex-col gap-2.5">
+          {chat.history.length === 0 && (
+            <div className="text-center text-neutral-600 text-sm py-8">
+              Say something to start the conversation
+            </div>
+          )}
+          {chat.history.map((m, i) => (
+            <div
+              key={i}
+              className={`rounded-2xl px-4 py-2.5 max-w-[80%] text-sm leading-relaxed ${
+                m.role === "user"
+                  ? "self-end bg-neutral-100 text-neutral-900"
+                  : "self-start bg-neutral-900/70 border border-neutral-800 text-neutral-300"
+              }`}
+            >
+              {m.content}
+            </div>
+          ))}
+          {chat.loading && (
+            <div className="self-start bg-neutral-900/70 border border-neutral-800 rounded-2xl px-4 py-2.5">
+              <span className="inline-flex gap-1">
+                <Dot />
+                <Dot delay={150} />
+                <Dot delay={300} />
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <footer className="px-4 pt-3 pb-4 border-t border-neutral-900 flex flex-col gap-3">
+        <div className="max-w-xl mx-auto w-full flex gap-2">
+          <input
+            value={chat.input}
+            onChange={(e) => chat.setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && chat.send()}
+            placeholder="Type a message…"
+            autoFocus
+            className="flex-1 bg-neutral-900 border border-neutral-800 rounded-full px-5 py-3 outline-none focus:border-neutral-700"
+          />
+          <button
+            onClick={chat.send}
+            disabled={chat.loading || !chat.input.trim()}
+            className="bg-neutral-100 text-neutral-900 rounded-full px-6 py-3 font-medium disabled:opacity-40 transition"
+          >
+            Send
+          </button>
         </div>
         <button
           onClick={end}
-          className="bg-red-500/90 hover:bg-red-500 text-white text-sm font-medium px-4 py-2 rounded-full"
+          className="max-w-xl mx-auto w-full bg-red-500 hover:bg-red-400 text-white rounded-full py-3.5 font-medium transition shadow-lg shadow-red-500/20"
         >
-          End
+          End call
         </button>
-      </header>
-
-      <Transcript
-        ref={transcriptRef}
-        history={chat.history}
-        loading={chat.loading}
-        emptyHint="Say something to start the conversation"
-      />
-
-      <MessageInput
-        value={chat.input}
-        onChange={chat.setInput}
-        onSend={chat.send}
-        disabled={chat.loading}
-      />
+      </footer>
     </main>
+  );
+}
+
+function CallPhoto({
+  personaName,
+  speaking,
+}: {
+  personaName: string;
+  speaking: boolean;
+}) {
+  const [hasPhoto, setHasPhoto] = useState(true);
+
+  return (
+    <div className="relative flex items-center justify-center w-32 h-32 md:w-40 md:h-40">
+      {speaking && (
+        <>
+          <span
+            className="absolute inset-0 rounded-full bg-emerald-500/25 animate-ping"
+            style={{ animationDuration: "1.6s" }}
+          />
+          <span
+            className="absolute -inset-3 rounded-full bg-emerald-500/15 animate-ping"
+            style={{ animationDuration: "2s", animationDelay: "0.3s" }}
+          />
+          <span
+            className="absolute -inset-6 rounded-full bg-emerald-500/10 animate-ping"
+            style={{ animationDuration: "2.4s", animationDelay: "0.6s" }}
+          />
+        </>
+      )}
+      <div
+        className={`relative w-full h-full rounded-full bg-gradient-to-br from-neutral-700 to-neutral-900 flex items-center justify-center overflow-hidden transition-all duration-300 ${
+          speaking
+            ? "ring-2 ring-emerald-500/70 shadow-[0_0_60px_-10px_rgba(16,185,129,0.55)]"
+            : "ring-1 ring-neutral-700"
+        }`}
+      >
+        {hasPhoto ? (
+          <img
+            src={`${API_URL}/me/photo`}
+            alt={personaName}
+            className="w-full h-full object-cover"
+            onError={() => setHasPhoto(false)}
+          />
+        ) : (
+          <span className="text-sm text-neutral-500">photo</span>
+        )}
+      </div>
+    </div>
   );
 }
 
